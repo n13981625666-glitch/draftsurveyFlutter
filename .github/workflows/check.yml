@@ -1,0 +1,45 @@
+name: Check
+
+# 只做 analyze + test，几分钟出结果；错误同时写进 Summary，方便整段复制。
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Prepare
+        run: |
+          node tools/select-ship.mjs "$(ls ships-lib | head -1 | sed 's/.shipx//')"
+          flutter create --project-name draft_survey --platforms=android .
+          flutter pub get
+      - name: Analyze
+        run: |
+          set +e
+          flutter analyze --no-pub 2>&1 | tee analyze.txt
+          echo '## flutter analyze' >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          head -c 60000 analyze.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -q " error • " analyze.txt && exit 1 || exit 0
+      - name: Test
+        run: flutter test 2>&1 | tee test.txt
+      - name: Debug APK
+        run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logs-and-apk
+          path: |
+            analyze.txt
+            test.txt
+            build/app/outputs/flutter-apk/app-debug.apk
