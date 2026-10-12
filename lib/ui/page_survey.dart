@@ -19,7 +19,7 @@ class SurveyPage extends StatelessWidget {
     String id(String k) => '$sec-$k';
     final solve = m.s.checked(id('solveConst'));
 
-    final inputs = CardBox(title: '1) Draft Inputs', titleColor: p.accent, children: [
+    final inputs = CardBox(title: '1) Draft Inputs', children: [
       Grid(children: [
         NumField(m, id('f_wp'), label: 'Draft Fore Port (m)'),
         NumField(m, id('f_ws'), label: 'Draft Fore Starboard (m)'),
@@ -40,7 +40,8 @@ class SurveyPage extends StatelessWidget {
       ]),
     ]);
 
-    final props = CardBox(title: 'Ship Properties', titleColor: p.accent, children: [
+    final props = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SectionTitle('Ship Properties'),
       Grid(children: [
         NumField(m, id('lightShip'), label: 'Light Ship (t)'),
         NumField(m, id('breadth'), label: 'Breadth (m)'),
@@ -99,34 +100,20 @@ class SurveyPage extends StatelessWidget {
       LogBox(m.surveyLogs[sec] ?? ''),
     ]);
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Text(AppModel.surveyTitle(tab),
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: p.accent)),
-      ),
-      CardBox(children: [
-        LayoutBuilder(builder: (context, c) {
-          if (c.maxWidth >= 760) {
-            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(child: inputs),
-              const SizedBox(width: 14),
-              Expanded(child: props),
-            ]);
-          }
-          return Column(children: [inputs, props]);
-        }),
-        LayoutBuilder(builder: (context, c) {
-          if (c.maxWidth >= 760) {
-            return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(child: results),
-              const SizedBox(width: 14),
-              Expanded(child: log),
-            ]);
-          }
-          return Column(children: [results, log]);
-        }),
-      ]),
+    return PageBox(children: [
+      LayoutBuilder(builder: (context, c) {
+        if (c.maxWidth >= 760) {
+          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: inputs),
+            const SizedBox(width: 14),
+            Expanded(child: props),
+          ]);
+        }
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [inputs, const SizedBox(height: 8), props]);
+      }),
+      Divider(height: 28, color: p.border),
+      results,
+      log,
     ]);
   }
 
@@ -139,7 +126,7 @@ class SurveyPage extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: active ? p.accent : p.btnBg,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(color: active ? p.accent : p.btnBorder),
         ),
         child: Text(text,

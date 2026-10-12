@@ -12,8 +12,8 @@ class StowagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      CardBox(title: 'Pre-Stowage Plan', titleSize: 22, children: [
-        CardBox(title: 'Profile', titleSize: 16, children: [
+      PageBox(title: 'Pre-Stowage Plan', children: [
+        CardBox(title: 'Profile', titleSize: 18, children: [
           Grid(cols: 3, children: [
             NumField(m, 'stowage-capacity', label: 'Capacity'),
             NumField(m, 'stowage-summer-draft', label: 'Summer Draft (m)'),
@@ -28,7 +28,7 @@ class StowagePage extends StatelessWidget {
         ]),
         for (final k in stowageLegKeys)
           if (m.isLegVisible(k)) _leg(context, k),
-        CardBox(title: 'Final Result (Mt)', titleSize: 16, children: [
+        CardBox(title: 'Final Result (Mt)', titleSize: 18, children: [
           Text(m.s.get('stowage-final-result-details'), style: TextStyle(color: Pal.of(context).muted, height: 1.5)),
           const SizedBox(height: 10),
           OutField(m, 'stowage-final-result'),
@@ -59,10 +59,10 @@ class StowagePage extends StatelessWidget {
     final on = m.s.checked('$p-toggle');
     final nextId = nextPortSelect[k];
     final nextIdx = (_intIndex[k] ?? 5) + 1;
-    return CardBox(title: _title(k), titleSize: 17, children: [
+    return CardBox(title: _title(k), titleSize: 18, children: [
       ChkField(m, '$p-toggle', 'Calculate R.O.B from last port/position'),
       if (on)
-        CardBox(title: _detailsTitle(k), titleSize: 14, children: [
+        CardBox(title: _detailsTitle(k), titleSize: 14, nested: true, children: [
           Grid(cols: 3, children: [
             NumField(m, '$p-current-fo', label: isLp ? 'Current F.O' : 'F.O'),
             NumField(m, '$p-current-do', label: isLp ? 'Current D.O' : 'D.O'),

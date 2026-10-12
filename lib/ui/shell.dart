@@ -149,17 +149,30 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver imple
     }
   }
 
+  Widget _tabItem(Pal p, {required bool sel, required String label, required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: sel ? p.accent : Colors.transparent, width: 3)),
+      ),
+      child: child,
+    );
+  }
+
   Widget _tabButton(Pal p, String id, String label) {
     final sel = tab == id;
-    return Padding(
-      padding: const EdgeInsets.only(right: 6),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: sel,
-        onSelected: (_) => _go(id),
-        selectedColor: p.accent,
-        labelStyle: TextStyle(color: sel ? p.btnPrimaryFg : p.fg, fontWeight: FontWeight.w600),
-      ),
+    return InkWell(
+      onTap: () => _go(id),
+      child: _tabItem(p,
+          sel: sel,
+          label: label,
+          child: Text(label,
+              style: TextStyle(
+                  color: sel ? p.accent : p.muted,
+                  fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 14,
+                  ))),
     );
   }
 
@@ -168,55 +181,70 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver imple
     final p = Pal.of(context);
     final inSurvey = _surveyTabs.containsKey(tab);
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: p.card,
-          titleSpacing: 12,
-          title: Text('Draft Survey — ${m.ship.name}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          actions: [
-            IconButton(tooltip: 'Licence', icon: const Text('⚓', style: TextStyle(fontSize: 20)), onPressed: _licenseInfo),
-            IconButton(
-              tooltip: 'Theme',
-              icon: Icon(widget.dark ? Icons.light_mode : Icons.dark_mode),
-              onPressed: widget.onToggleTheme,
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: Row(children: [
-                  PopupMenuButton<String>(
-                    tooltip: 'Draft Survey',
-                    onSelected: _go,
-                    itemBuilder: (_) => [for (final e in _surveyTabs.entries) PopupMenuItem(value: e.key, child: Text(e.value))],
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: inSurvey ? p.accent : p.btnBg,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: inSurvey ? p.accent : p.btnBorder),
-                      ),
-                      child: Text(
-                        'Draft Survey${inSurvey ? ' · ${_surveyTabs[tab]}' : ''} ▾',
-                        style: TextStyle(color: inSurvey ? p.btnPrimaryFg : p.fg, fontWeight: FontWeight.w600),
+        body: Column(children: [
+          Container(
+            decoration: BoxDecoration(color: p.bar, border: Border(bottom: BorderSide(color: p.border))),
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1100),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 8, 2),
+                      child: Row(children: [
+                        Icon(Icons.directions_boat_filled, size: 22, color: p.accent),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(m.ship.name.toUpperCase(),
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, letterSpacing: 0.4, color: p.fg)),
+                        ),
+                        IconButton(tooltip: 'Licence', icon: Icon(Icons.verified_outlined, size: 22, color: p.muted), onPressed: _licenseInfo),
+                        IconButton(
+                          tooltip: 'Theme',
+                          icon: Icon(widget.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 22, color: p.accent),
+                          onPressed: widget.onToggleTheme,
+                        ),
+                      ]),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: SizedBox(
+                        height: 42,
+                        child: Row(children: [
+                          PopupMenuButton<String>(
+                            tooltip: 'Draft Survey',
+                            onSelected: _go,
+                            itemBuilder: (_) => [for (final e in _surveyTabs.entries) PopupMenuItem(value: e.key, child: Text(e.value))],
+                            child: _tabItem(p,
+                                sel: inSurvey,
+                                label: 'Draft Survey',
+                                child: Row(children: [
+                                  Text('Draft Survey${inSurvey ? ' · ${_surveyTabs[tab]}' : ''}',
+                                      style: TextStyle(
+                                          color: inSurvey ? p.accent : p.muted,
+                                          fontWeight: inSurvey ? FontWeight.w700 : FontWeight.w500,
+                                          fontSize: 14)),
+                                  Icon(Icons.arrow_drop_down, size: 20, color: inSurvey ? p.accent : p.muted),
+                                ])),
+                          ),
+                          for (final e in _otherTabs.entries) _tabButton(p, e.key, e.value),
+                        ]),
                       ),
                     ),
-                  ),
-                  for (final e in _otherTabs.entries) _tabButton(p, e.key, e.value),
-                ]),
+                  ]),
+                ),
               ),
             ),
           ),
-        ),
-        body: Stack(children: [
+          Expanded(child: Stack(children: [
           SafeArea(
+            top: false,
             child: SingleChildScrollView(
               controller: _sc,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 1100),
@@ -239,7 +267,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver imple
               child: Material(
                 color: p.card,
                 elevation: 6,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 10, 4, 10),
                   child: Row(children: [
@@ -249,6 +277,7 @@ class _MainShellState extends State<MainShell> with WidgetsBindingObserver imple
                 ),
               ),
             ),
+        ])),
         ]),
     );
   }

@@ -11,30 +11,35 @@ class CardBox extends StatelessWidget {
   final Color? titleColor;
   final List<Widget> children;
   final Widget? trailing;
-  const CardBox({super.key, this.title, this.titleSize = 17, this.titleColor, this.trailing, required this.children});
+  /// A card inside another card: tinted, no shadow.
+  final bool nested;
+  const CardBox({super.key, this.title, this.titleSize = 17, this.titleColor, this.trailing, this.nested = false, required this.children});
 
   @override
   Widget build(BuildContext context) {
     final p = Pal.of(context);
+    final nested = this.nested || _Nest.of(context);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: p.card,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: p.border),
+        boxShadow: (p.dark || nested) ? null : const [BoxShadow(color: Color(0x120F2A3A), blurRadius: 8, offset: Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 12),
               child: Row(children: [
+                Container(width: 3, height: titleSize + 2, margin: const EdgeInsets.only(right: 9), color: p.accent),
                 Expanded(
                   child: Text(title!,
-                      style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.w700, color: titleColor ?? p.fg)),
+                      style: TextStyle(fontSize: titleSize - 1, fontWeight: FontWeight.w700, letterSpacing: 0.2, color: p.fg)),
                 ),
                 if (trailing != null) trailing!,
               ]),
@@ -44,6 +49,126 @@ class CardBox extends StatelessWidget {
       ),
     );
   }
+}
+
+class _Nest extends InheritedWidget {
+  const _Nest({required super.child});
+  static bool of(BuildContext c) => c.dependOnInheritedWidgetOfExactType<_Nest>() != null;
+  @override
+  bool updateShouldNotify(_Nest old) => false;
+}
+
+/// Big section heading used inside page cards.
+class SectionTitle extends StatelessWidget {
+  final String text;
+  final double size;
+  const SectionTitle(this.text, {super.key, this.size = 22});
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Text(text,
+            style: TextStyle(fontSize: size, fontWeight: FontWeight.w800, letterSpacing: 0.2, color: Pal.of(context).fg)),
+      );
+}
+
+/// A whole page: one outer card with the page title; cards inside it are tinted.
+class PageBox extends StatelessWidget {
+  final String? title;
+  final List<Widget> children;
+  const PageBox({super.key, this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Pal.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: p.border),
+        boxShadow: p.dark ? null : const [BoxShadow(color: Color(0x120F2A3A), blurRadius: 10, offset: Offset(0, 2))],
+      ),
+      child: _Nest(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (title != null) SectionTitle(title!),
+          ...children,
+        ]),
+      ),
+    );
+  }
+}
+
+/// Bordered table: header row, body rows, optional footer. Rows collapse into
+/// labelled blocks on narrow screens.
+class TableBox extends StatelessWidget {
+  final List<String> headers;
+  final List<int> flex;
+  final List<List<Widget>> rows;
+  final Widget? footer;
+  const TableBox({super.key, required this.headers, required this.flex, required this.rows, this.footer});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Pal.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: p.card,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: p.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: LayoutBuilder(builder: (context, c) {
+        final wide = c.maxWidth >= 520;
+        final hs = TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: p.fg);
+        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          if (wide)
+            Container(
+              color: p.thBg,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              child: Row(children: [
+                for (var i = 0; i < headers.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 10),
+                  Expanded(flex: flex[i], child: Text(headers[i], style: hs)),
+                ],
+              ]),
+            ),
+          if (wide) Divider(height: 1, color: p.border),
+          for (var r = 0; r < rows.length; r++) ...[
+            if (r > 0 && !wide) Divider(height: 1, color: p.border),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: wide ? 6 : 10),
+              child: wide
+                  ? Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                      for (var i = 0; i < rows[r].length; i++) ...[
+                        if (i > 0) const SizedBox(width: 10),
+                        Expanded(flex: flex[i], child: rows[r][i]),
+                      ],
+                    ])
+                  : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      for (var i = 0; i < rows[r].length; i++) ...[
+                        if (i > 0) const SizedBox(height: 6),
+                        if (i > 0 && headers[i].isNotEmpty) Text(headers[i], style: TextStyle(fontSize: 12, color: p.muted)),
+                        rows[r][i],
+                      ],
+                    ]),
+            ),
+          ],
+          if (footer != null) Padding(padding: const EdgeInsets.fromLTRB(14, 4, 14, 12), child: footer!),
+        ]);
+      }),
+    );
+  }
+}
+
+/// Right-aligned or plain table-cell label.
+class CellLabel extends StatelessWidget {
+  final String text;
+  const CellLabel(this.text, {super.key});
+  @override
+  Widget build(BuildContext context) =>
+      Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Pal.of(context).fg));
 }
 
 /// Lays children out in rows of [cols] equal columns; fewer columns on narrow screens.
@@ -86,13 +211,14 @@ InputDecoration _deco(Pal p, String? label, {bool out = false, String? hint}) =>
       isDense: true,
       filled: true,
       fillColor: out ? p.outBg : p.inputBg,
-      labelStyle: TextStyle(color: p.muted, fontSize: 13),
+      labelStyle: TextStyle(color: p.muted, fontSize: 12.5, fontWeight: FontWeight.w500),
+      floatingLabelStyle: TextStyle(color: out ? p.muted : p.accent, fontSize: 13, fontWeight: FontWeight.w600),
       floatingLabelBehavior: FloatingLabelBehavior.always,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: p.btnBorder)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: p.btnBorder)),
-      disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: p.border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: p.accent, width: 1.6)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: out ? p.border : p.btnBorder)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: out ? p.border : p.btnBorder)),
+      disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: p.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: p.accent, width: 2)),
     );
 
 final _numFormatter = FilteringTextInputFormatter.allow(RegExp(r'[0-9eE+\-.,]'));
@@ -116,7 +242,7 @@ class NumField extends StatelessWidget {
       readOnly: readOnly,
       keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
       inputFormatters: [_numFormatter],
-      style: TextStyle(color: locked ? p.muted : p.fg, fontSize: 15),
+      style: TextStyle(color: locked ? p.muted : p.fg, fontSize: 15, fontFeatures: kNumFeatures),
       decoration: _deco(p, label, out: locked),
       onChanged: (_) => m.s.typed(id),
     );
@@ -136,7 +262,7 @@ class OutField extends StatelessWidget {
     return TextField(
       controller: m.s.controller(id),
       readOnly: true,
-      style: TextStyle(color: p.fg, fontSize: 15, fontWeight: FontWeight.w600),
+      style: TextStyle(color: p.brass, fontSize: 15, fontWeight: FontWeight.w700, fontFeatures: kNumFeatures),
       decoration: _deco(p, label, out: true),
     );
   }
@@ -220,11 +346,13 @@ class Btn extends StatelessWidget {
     final p = Pal.of(context);
     final style = ButtonStyle(
       backgroundColor: WidgetStatePropertyAll(primary ? p.accent : p.btnBg),
+      elevation: const WidgetStatePropertyAll(0),
       foregroundColor: WidgetStatePropertyAll(primary ? p.btnPrimaryFg : p.fg),
       side: WidgetStatePropertyAll(BorderSide(color: primary ? p.accent : p.btnBorder)),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-      padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-      textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      overlayColor: WidgetStatePropertyAll(p.accent.withOpacity(0.12)),
+      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+      padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 14, vertical: 14)),
+      textStyle: const WidgetStatePropertyAll(TextStyle(fontWeight: FontWeight.w600, fontSize: 14, letterSpacing: 0.2)),
     );
     final label = Text(text, textAlign: TextAlign.center);
     return icon == null
@@ -244,7 +372,7 @@ class CellText extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Pal.of(context);
     return Text(text,
-        textAlign: align, style: TextStyle(color: p.fg, fontWeight: bold ? FontWeight.w700 : FontWeight.w500, fontSize: 14));
+        textAlign: align, style: TextStyle(color: p.fg, fontWeight: bold ? FontWeight.w700 : FontWeight.w500, fontSize: 14, fontFeatures: kNumFeatures));
   }
 }
 
@@ -267,9 +395,9 @@ class LogBox extends StatelessWidget {
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: 60, maxHeight: 220),
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: p.inputBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: p.btnBorder)),
+      decoration: BoxDecoration(color: p.inputBg, borderRadius: BorderRadius.circular(6), border: Border.all(color: p.border)),
       child: SingleChildScrollView(
-        child: SelectableText(text, style: TextStyle(fontFamily: 'monospace', fontSize: 12.5, color: p.fg)),
+        child: SelectableText(text, style: TextStyle(fontFamily: 'monospace', fontSize: 12.5, height: 1.45, color: p.muted)),
       ),
     );
   }

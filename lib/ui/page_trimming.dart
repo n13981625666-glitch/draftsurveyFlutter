@@ -8,94 +8,96 @@ class TrimmingPage extends StatelessWidget {
   final AppModel m;
   const TrimmingPage({super.key, required this.m});
 
-  Widget _holdRow(String sel, String f, String a) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Grid(cols: 3, children: [
-        SelField(m, sel, label: 'Hold / Frame'),
-        OutField(m, f, label: 'Fore (cm)'),
-        OutField(m, a, label: 'Aft (cm)'),
-      ]),
-    ]);
-  }
+  Widget _pair(Widget l, Widget r) => LayoutBuilder(builder: (context, c) {
+        if (c.maxWidth >= 760) {
+          return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: l),
+            const SizedBox(width: 14),
+            Expanded(child: r),
+          ]);
+        }
+        return Column(children: [l, r]);
+      });
+
+  List<Widget> _holdRow(String sel, String f, String a) => [SelField(m, sel), OutField(m, f), OutField(m, a)];
+
+  Widget _total(Pal p, List<Widget> cells) => Row(children: [
+        Expanded(flex: 2, child: Text('Total Weight:', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.w600, color: p.fg))),
+        for (final c in cells) ...[const SizedBox(width: 10), Expanded(flex: 2, child: c)],
+      ]);
+
+  Widget _finalDraft(Pal p, String pre) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const SectionTitle('Final Draft', size: 18),
+        Grid(cols: 4, children: [
+          OutField(m, '$pre-df', label: 'DF (m)'),
+          OutField(m, '$pre-dm', label: 'DM (m)'),
+          OutField(m, '$pre-da', label: 'DA (m)'),
+          OutField(m, '$pre-trim', label: 'Trim (m)'),
+        ]),
+      ]);
 
   @override
   Widget build(BuildContext context) {
     final p = Pal.of(context);
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      CardBox(title: 'Trim Calculation', titleSize: 22, children: [
-        CardBox(title: 'Profile', titleSize: 16, children: [
-          NumField(m, 'cgotoloaded', label: 'Cargo to be loaded'),
-          const SizedBox(height: 10),
-          Grid(cols: 3, children: [
-            NumField(m, 'trimming-df', label: 'DF (m)'),
-            NumField(m, 'trimming-dm', label: 'DM (m)'),
-            NumField(m, 'trimming-da', label: 'DA (m)'),
-          ]),
-          Grid(cols: 3, children: [
-            OutField(m, 'trimming-trim', label: 'Trim (m)'),
-            NumField(m, 'trimming-requiredTrim', label: 'Required Trim (m)'),
-            OutField(m, 'trimming-requiredTrimConditon', label: 'Required Condition'),
-          ]),
-          Grid(cols: 3, children: [OutField(m, 'trimChanging', label: 'Trim changing')]),
+    return PageBox(title: 'Trim Calculation', children: [
+      CardBox(title: 'Profile', titleSize: 18, children: [
+        NumField(m, 'cgotoloaded', label: 'Cargo to be loaded'),
+        const SizedBox(height: 10),
+        Grid(cols: 3, children: [
+          NumField(m, 'trimming-df', label: 'DF (m)'),
+          NumField(m, 'trimming-dm', label: 'DM (m)'),
+          NumField(m, 'trimming-da', label: 'DA (m)'),
         ]),
-        Grid(cols: 4, children: [
-          Btn('Initial Condition', () => m.importSurveyDataToTrimming('initial'), primary: true),
-          Btn('Int1 Condition', () => m.importSurveyDataToTrimming('int1')),
-          Btn('Int2 Condition', () => m.importSurveyDataToTrimming('int2')),
-          Btn('Final Condition', () => m.importSurveyDataToTrimming('final')),
+        Grid(cols: 3, children: [
+          OutField(m, 'trimming-trim', label: 'Trim (m)'),
+          NumField(m, 'trimming-requiredTrim', label: 'Required Trim (m)'),
+          OutField(m, 'trimming-requiredTrimConditon', label: 'Required Condition'),
         ]),
-        CardBox(title: 'Change Per 100 Mt', titleSize: 16, children: [
-          _holdRow('firstHold', 'firstHoldF', 'firstHoldA'),
-          _holdRow('secondHold', 'secondHoldF', 'secondHoldA'),
-          Text('Distribution', style: TextStyle(color: p.muted, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          Grid(cols: 3, children: [
-            OutField(m, 'firstHoldDistribution', label: 'Hold / Frame'),
-            OutField(m, 'firstHoldDistributionWeight', label: 'Distribution (Mt)'),
-            OutField(m, 'firstHoldDistributionWeightHeelMethod', label: 'Heeling Method'),
-            OutField(m, 'secondHoldDistribution', label: 'Hold / Frame'),
-            OutField(m, 'secondHoldDistributionWeight', label: 'Distribution (Mt)'),
-            OutField(m, 'secondHoldDistributionWeightHeelMethod', label: 'Heeling Method'),
-            const SizedBox(),
-            OutField(m, 'distribution-total-weight-cell', label: 'Total Weight'),
-            OutField(m, 'distribution-total-weight-cell-heel', label: 'Total Weight (heel)'),
+        Grid(cols: 3, children: [OutField(m, 'trimChanging', label: 'Trim changing')]),
+      ]),
+      Grid(cols: 4, children: [
+        Btn('Initial Condition', () => m.importSurveyDataToTrimming('initial'), primary: true),
+        Btn('Int1 Condition', () => m.importSurveyDataToTrimming('int1')),
+        Btn('Int2 Condition', () => m.importSurveyDataToTrimming('int2')),
+        Btn('Final Condition', () => m.importSurveyDataToTrimming('final')),
+      ]),
+      CardBox(title: 'Change Per 100 Mt', titleSize: 18, children: [
+        _pair(
+          TableBox(headers: const ['Hold', 'Fore (cm)', 'Aft (cm)'], flex: const [2, 2, 2], rows: [
+            _holdRow('firstHold', 'firstHoldF', 'firstHoldA'),
+            _holdRow('secondHold', 'secondHoldF', 'secondHoldA'),
           ]),
-          const Text('Final Draft', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Grid(cols: 4, children: [
-            OutField(m, 'distribution-final-df', label: 'DF (m)'),
-            OutField(m, 'distribution-final-dm', label: 'DM (m)'),
-            OutField(m, 'distribution-final-da', label: 'DA (m)'),
-            OutField(m, 'distribution-final-trim', label: 'Trim (m)'),
+          TableBox(
+            headers: const ['Hold', 'Distribution (Mt)', 'Heeling Method'],
+            flex: const [2, 2, 2],
+            rows: [
+              [OutField(m, 'firstHoldDistribution'), OutField(m, 'firstHoldDistributionWeight'), OutField(m, 'firstHoldDistributionWeightHeelMethod')],
+              [OutField(m, 'secondHoldDistribution'), OutField(m, 'secondHoldDistributionWeight'), OutField(m, 'secondHoldDistributionWeightHeelMethod')],
+            ],
+            footer: _total(p, [OutField(m, 'distribution-total-weight-cell'), OutField(m, 'distribution-total-weight-cell-heel')]),
+          ),
+        ),
+        _finalDraft(p, 'distribution-final'),
+      ]),
+      CardBox(title: 'Calculation', titleSize: 18, children: [
+        _pair(
+          TableBox(headers: const ['Hold', 'Fore (cm)', 'Aft (cm)'], flex: const [2, 2, 2], rows: [
+            _holdRow('firstHoldCal', 'calFirstHoldF', 'calFirstHoldA'),
+            _holdRow('secondHoldCal', 'calSencondHoldF', 'calSencondHoldA'),
+            _holdRow('thirdHoldCal', 'calThirdHoldF', 'calThirdHoldA'),
           ]),
-        ]),
-        CardBox(title: 'Calculation', titleSize: 16, children: [
-          _holdRow('firstHoldCal', 'calFirstHoldF', 'calFirstHoldA'),
-          _holdRow('secondHoldCal', 'calSencondHoldF', 'calSencondHoldA'),
-          _holdRow('thirdHoldCal', 'calThirdHoldF', 'calThirdHoldA'),
-          Grid(cols: 3, children: [
-            OutField(m, 'firstHoldCalDistribution', label: 'Hold / Frame'),
-            NumField(m, 'firstHoldCalDistributionWeight', label: 'Distribution (Mt)'),
-            const SizedBox(),
-            OutField(m, 'secondHoldCalDistribution', label: 'Hold / Frame'),
-            NumField(m, 'secondHoldCalDistributionWeight', label: 'Distribution (Mt)'),
-            const SizedBox(),
-            OutField(m, 'thirdHoldCalDistribution', label: 'Hold / Frame'),
-            NumField(m, 'thirdHoldCalDistributionWeight', label: 'Distribution (Mt)'),
-            const SizedBox(),
-            const SizedBox(),
-            OutField(m, 'cal-total-weight-cell', label: 'Total Weight'),
-            const SizedBox(),
-          ]),
-          const Text('Final Draft', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Grid(cols: 4, children: [
-            OutField(m, 'final-cal-df', label: 'DF (m)'),
-            OutField(m, 'final-cal-dm', label: 'DM (m)'),
-            OutField(m, 'final-cal-da', label: 'DA (m)'),
-            OutField(m, 'final-cal-trim', label: 'Trim (m)'),
-          ]),
-        ]),
+          TableBox(
+            headers: const ['Hold', 'Distribution (Mt)'],
+            flex: const [2, 3],
+            rows: [
+              [OutField(m, 'firstHoldCalDistribution'), NumField(m, 'firstHoldCalDistributionWeight')],
+              [OutField(m, 'secondHoldCalDistribution'), NumField(m, 'secondHoldCalDistributionWeight')],
+              [OutField(m, 'thirdHoldCalDistribution'), NumField(m, 'thirdHoldCalDistributionWeight')],
+            ],
+            footer: _total(p, [OutField(m, 'cal-total-weight-cell')]),
+          ),
+        ),
+        _finalDraft(p, 'final-cal'),
       ]),
     ]);
   }

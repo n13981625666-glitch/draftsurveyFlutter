@@ -1,3 +1,5 @@
+import 'dart:ui' show FontFeature;
+
 import 'package:flutter/material.dart';
 
 /// Colour tokens of the original CSS (dark = default, light = [data-theme="light"]).
@@ -23,35 +25,43 @@ class Pal {
       required this.outBg,
       required this.btnPrimaryFg});
 
+  // Chart-table palette: deep hull navy, sea-chart paper, brass for computed results.
   static const darkPal = Pal._(true,
-      bg: Color(0xFF0B1220),
-      card: Color(0xFF121A2B),
-      fg: Color(0xFFE8EEF7),
-      muted: Color(0xFFA9B5C5),
-      accent: Color(0xFF65C3FF),
-      border: Color(0xFF243356),
-      inputBg: Color(0xFF0F1626),
-      btnBg: Color(0xFF0F1626),
-      btnBorder: Color(0xFF2A3555),
-      thBg: Color(0xFF0B1220),
-      hover: Color(0xFF18213A),
-      outBg: Color(0xFF0D1422),
-      btnPrimaryFg: Color(0xFF00243F));
+      bg: Color(0xFF0A1218),
+      card: Color(0xFF111C25),
+      fg: Color(0xFFE6EDF2),
+      muted: Color(0xFF8FA1AF),
+      accent: Color(0xFF4FC1D0),
+      border: Color(0xFF1E2E3B),
+      inputBg: Color(0xFF0D161E),
+      btnBg: Color(0xFF172632),
+      btnBorder: Color(0xFF263A4A),
+      thBg: Color(0xFF0A1218),
+      hover: Color(0xFF16303A),
+      outBg: Color(0xFF14232E),
+      btnPrimaryFg: Color(0xFF04222A));
 
   static const lightPal = Pal._(false,
-      bg: Color(0xFFF7F9FC),
+      bg: Color(0xFFE9EEF1),
       card: Color(0xFFFFFFFF),
-      fg: Color(0xFF21304B),
-      muted: Color(0xFF535F70),
-      accent: Color(0xFF3FA2FD),
-      border: Color(0xFFC9D6EA),
-      inputBg: Color(0xFFF2F6FA),
-      btnBg: Color(0xFFF2F6FA),
-      btnBorder: Color(0xFFC9D6EA),
-      thBg: Color(0xFFE9F2FD),
-      hover: Color(0xFFE9F2FD),
-      outBg: Color(0xFFEAF0F7),
+      fg: Color(0xFF12222D),
+      muted: Color(0xFF5A6C79),
+      accent: Color(0xFF0A6C86),
+      border: Color(0xFFD3DDE3),
+      inputBg: Color(0xFFF5F8FA),
+      btnBg: Color(0xFFE4ECF0),
+      btnBorder: Color(0xFFC4D1D9),
+      thBg: Color(0xFFE4ECF0),
+      hover: Color(0xFFDCEEF2),
+      outBg: Color(0xFFE6F0F3),
       btnPrimaryFg: Color(0xFFFFFFFF));
+
+  /// Header colours (header sits on the page background).
+  Color get bar => bg;
+  Color get barFg => fg;
+  Color get barAccent => accent;
+  /// Brass highlight for computed values.
+  Color get brass => dark ? const Color(0xFFE2B866) : const Color(0xFF8A5A00);
 
   static Pal of(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? darkPal : lightPal;
 
@@ -67,6 +77,24 @@ class Pal {
     );
     return base.copyWith(
       textTheme: base.textTheme.apply(bodyColor: fg, displayColor: fg),
+      visualDensity: VisualDensity.standard,
+      dividerColor: border,
+      dialogTheme: DialogThemeData(
+        backgroundColor: card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: border)),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: border)),
+      ),
+      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: accent)),
+      checkboxTheme: CheckboxThemeData(
+        side: BorderSide(color: btnBorder, width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      ),
     );
   }
 }
+
+/// Tabular figures keep columns of numbers aligned.
+const kNumFeatures = [FontFeature.tabularFigures()];
