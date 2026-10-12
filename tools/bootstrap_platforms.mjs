@@ -55,5 +55,6 @@ if (fs.existsSync(iconSrc) && fs.existsSync(res)) fs.cpSync(iconSrc, res, { recu
 edit('windows/runner/main.cpp', (s) => s.replace(/window\.Create\(L"[^"]*"/, `window.Create(L"${id.productName}"`));
 edit('windows/CMakeLists.txt', (s) => s.replace(/set\(BINARY_NAME "[^"]*"\)/, 'set(BINARY_NAME "DraftSurvey")'));
 const ico = path.join(ROOT, 'assets', 'branding', 'icons', 'icon.ico');
-if (fs.existsSync(ico)) fs.copyFileSync(ico, path.join(ROOT, 'windows/runner/resources/app_icon.ico'));
+const winRes = path.join(ROOT, 'windows', 'runner', 'resources');
+if (fs.existsSync(ico) && fs.existsSync(winRes)) fs.copyFileSync(ico, path.join(winRes, 'app_icon.ico'));
 console.log(`\nPlatforms ready for ${id.productName} (${id.identifier}).`);
