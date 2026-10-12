@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 /// Colour tokens of the original CSS (dark = default, light = [data-theme="light"]).
 class Pal {
-  final Color bg, card, fg, muted, accent, border, inputBg, btnBg, btnBorder, thBg, ok, warn, err, hover, outBg;
+  final Color bg, card, fg, muted, accent, border, inputBg, btnBg, btnBorder, thBg, hover, outBg;
+  final Color ok = const Color(0xFF22C55E);
+  final Color warn = const Color(0xFFF59E0B);
+  final Color err = const Color(0xFFEF4444);
   final Color btnPrimaryFg;
   final bool dark;
   const Pal._(this.dark,
@@ -18,10 +21,7 @@ class Pal {
       required this.thBg,
       required this.hover,
       required this.outBg,
-      required this.btnPrimaryFg,
-      this.ok = const Color(0xFF22C55E),
-      this.warn = const Color(0xFFF59E0B),
-      this.err = const Color(0xFFEF4444)});
+      required this.btnPrimaryFg});
 
   static const darkPal = Pal._(true,
       bg: Color(0xFF0B1220),

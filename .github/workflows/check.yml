@@ -43,4 +43,3 @@ jobs:
           path: |
             analyze.txt
             test.txt
-            build/app/outputs/flutter-apk/app-debug.apk
