@@ -47,6 +47,7 @@ jobs:
           cache: true
       - run: node tools/select-ship.mjs "$(ls ships-lib | head -1 | sed 's/.shipx//')"
       - run: flutter create --project-name draft_survey --platforms=android .
+      - run: rm -f test/widget_test.dart
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test

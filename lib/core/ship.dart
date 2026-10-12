@@ -14,10 +14,10 @@ class ShipData {
   double lightShip = 0, breadth = 0, keelPlate = 0, lbp = 0;
   List<double> lf = [0], lm = [0], la = [0];
   double capacity = 0, summerDraft = 0, tropicalDraft = 0, constant = 0;
-  List<Row> hydro = [];
+  List<TRow> hydro = [];
   List<String> holdIds = [];
   Map<String, double> holdsLcg = {};
-  List<Row> trimtable = [];
+  List<TRow> trimtable = [];
   /// load point name -> LCG (insertion ordered)
   Map<String, double> capacityPlan = {};
   /// tank number (1-based) -> name
@@ -162,7 +162,7 @@ ShipData shipFromProfile(Map<String, dynamic> p, String shipId) {
   d.tropicalDraft = (s['tropicalDraft'] as num).toDouble();
   d.constant = (s['constant'] as num).toDouble();
 
-  d.hydro = (p['hydrostatic']['rows'] as List).map<Row>((r) {
+  d.hydro = (p['hydrostatic']['rows'] as List).map<TRow>((r) {
     return {for (final k in ['DRAFT', 'DISP', 'TPC', 'MTC', 'LCB', 'LCF']) k: (r[k] as num).toDouble()};
   }).toList();
 

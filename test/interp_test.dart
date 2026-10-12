@@ -2,7 +2,7 @@ import 'package:draft_survey/core/util.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final table = <Row>[
+  final table = <TRow>[
     {'d': 1.0, 'v': 10.0},
     {'d': 2.0, 'v': 20.0},
     {'d': 4.0, 'v': 60.0},
@@ -15,6 +15,6 @@ void main() {
     expect(interpTable(table, 'd', 'v', 5.0), 80.0);
   });
   test('empty table -> null', () {
-    expect(interpTable(<Row>[], 'd', 'v', 1.0), isNull);
+    expect(interpTable(<TRow>[], 'd', 'v', 1.0), isNull);
   });
 }

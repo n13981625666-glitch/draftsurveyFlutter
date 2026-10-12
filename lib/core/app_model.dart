@@ -205,7 +205,7 @@ class AppModel extends ChangeNotifier {
   }
 
   /// Pure draft survey calculation (calcDraftSurvey in the old survey.js).
-  SurveyResult calcDraftSurvey(SurveyInputs i, [List<Row>? tableArg]) {
+  SurveyResult calcDraftSurvey(SurveyInputs i, [List<TRow>? tableArg]) {
     final table = tableArg ?? ship.hydro;
     final r = SurveyResult();
     final sumF = (i.fWp + i.fWs) / 2;

@@ -21,6 +21,7 @@ jobs:
         run: |
           node tools/select-ship.mjs "$(ls ships-lib | head -1 | sed 's/.shipx//')"
           flutter create --project-name draft_survey --platforms=android .
+          rm -f test/widget_test.dart
           flutter pub get
       - name: Analyze
         run: |

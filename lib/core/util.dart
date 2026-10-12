@@ -38,13 +38,13 @@ double lerp(double x0, double y0, double x1, double y1, double x) {
   return y0 + ((y1 - y0) * ((x - x0) / (x1 - x0)));
 }
 
-typedef Row = Map<String, double>;
+typedef TRow = Map<String, double>;
 
-double _g(Row r, String k) => r[k] ?? double.nan;
+double _g(TRow r, String k) => r[k] ?? double.nan;
 
 /// Linear interpolation / extrapolation in a table sorted ascending by [key]. null when the table is empty
 /// or [x] is NaN (same as the JS `interpTable`).
-double? interpTable(List<Row> table, String key, String valKey, double x) {
+double? interpTable(List<TRow> table, String key, String valKey, double x) {
   if (table.isEmpty) return null;
   final n = table.length;
   if (x <= _g(table[0], key)) {
@@ -68,7 +68,7 @@ double? interpTable(List<Row> table, String key, String valKey, double x) {
 }
 
 /// `interpTable(...) || 0`
-double interpOrZero(List<Row> table, String key, String valKey, double x) {
+double interpOrZero(List<TRow> table, String key, String valKey, double x) {
   final v = interpTable(table, key, valKey, x);
   if (v == null || v.isNaN) return 0;
   return v;

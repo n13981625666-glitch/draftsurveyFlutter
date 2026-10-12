@@ -8,7 +8,7 @@ class TrimmingPage extends StatelessWidget {
   final AppModel m;
   const TrimmingPage({super.key, required this.m});
 
-  Widget _holdRow(String sel, String f, String a, {String? dist, String? weight, String? heel, bool calWeightInput = false}) {
+  Widget _holdRow(String sel, String f, String a) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Grid(cols: 3, children: [
         SelField(m, sel, label: 'Hold / Frame'),
